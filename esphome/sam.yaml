@@ -1,0 +1,42 @@
+substitutions:
+  device_name: esp-salon
+
+<<: !include .base.yaml
+<<: !include .device.d32.yaml
+
+esp32_ble_tracker:
+
+sensor:
+  - platform: xiaomi_cgg1
+    mac_address: "58:2D:34:11:39:D1"
+    temperature:
+      name: "SAM Temperature"
+    humidity:
+      name: "SAM Humidity"
+    battery_level:
+      name: "SAM Battery Level"
+
+  - platform: uptime
+    name: ${device_name} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} WiFi Signal
+    update_interval: 60s
+
+  - platform: ble_rssi
+    mac_address: 58:2D:34:11:39:D1
+    name: "SAM RSSI"
+
+text_sensor:
+  # Expose ESPHome version as sensor.
+  - platform: version
+    name: ${device_name} ESPHome Version
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} IP
+    ssid:
+      name: ${device_name} SSID
+    bssid:
+      name: ${device_name} BSSID

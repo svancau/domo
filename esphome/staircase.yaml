@@ -1,0 +1,139 @@
+substitutions:
+  device_name: shelly-staircase
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+<<: !include .base.yaml
+
+api:
+  password: !secret api_password
+  services:
+    - service: staircase_lamp_timer
+      variables:
+        duration: int
+      then:
+        - lambda: |-
+            id(timer_delay) = duration;
+        - script.execute: timer
+
+# Text sensors with general information.
+text_sensor:
+  # Expose ESPHome version as sensor.
+  - platform: version
+    name: ${device_name} ESPHome Version
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} IP
+    ssid:
+      name: ${device_name} SSID
+    bssid:
+      name: ${device_name} BSSID
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${device_name} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} WiFi Signal
+    update_interval: 60s
+
+# Shelly 1 detached switch config with multi click options and fallback in case of wifi or api fail
+switch:
+  - platform: gpio
+    name: shelly1 ${device_name}
+    pin: GPIO4
+    id: shelly_relay
+    restore_mode: restore_default_off
+
+globals:
+  # Timer delay in seconds
+  - id: timer_delay
+    type: int
+    restore_value: no
+    initial_value: '120'
+
+script:
+  # Timer script, turns relay on, then off. Duration must be stored in timer_delay
+  # before calling this
+  - id: timer 
+    mode: restart
+    then:
+      - switch.turn_on: shelly_relay
+      - delay: !lambda "return id(timer_delay) * 1000;"   
+      - switch.turn_off: shelly_relay
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+    name: ${device_name} button
+    # config for multi click actions
+    on_multi_click:
+      # double click
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.1s
+        then:
+          - if:
+              condition:
+                and:
+                  - wifi.connected:
+                  - api.connected:
+              # send double click event in case wifi and api are conncected
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      title: ${device_name} double click
+              # toggle relay in case either wifi or api are not connected
+          - switch.turn_off: shelly_relay
+        # long click
+      - timing:
+          - ON for at least 1.2s
+        then:
+          - if:
+              condition:
+                and:
+                  - wifi.connected:
+                  - api.connected:
+              # send long click event in case wifi and api are conncected
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      title: ${device_name} long click
+              # toggle relay in case either wifi or api are not connected
+          - lambda: |-
+              id(timer_delay) = 8*3600;
+          - script.execute: timer
+        # single click
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.1s
+        then:
+          - if:
+              condition:
+                and:
+                  - wifi.connected:
+                  - api.connected:
+              # send single click event in case wifi and api are conncected
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      title: ${device_name} short click
+              # toggle relay in case either wifi or api are not connected
+          - lambda: |-
+              id(timer_delay) = 90;
+          - script.execute: timer
+    internal: true
+    id: button
