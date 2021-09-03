@@ -100,7 +100,7 @@ binary_sensor:
           - script.execute: timer
         # long click
       - timing:
-          - ON for at least 1.2s
+          - ON for at least 1.5s
         then:
           - if:
               condition:
@@ -114,6 +114,11 @@ binary_sensor:
                     data:
                       title: ${device_name} long click
               # toggle relay in case either wifi or api are not connected
+
+          - switch.turn_on: shelly_relay
+          - delay: 1s   
+          - switch.turn_off: shelly_relay
+          - delay: 1s   
           - lambda: |-
               id(timer_delay) = 8*3600;
           - script.execute: timer
