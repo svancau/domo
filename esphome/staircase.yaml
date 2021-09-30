@@ -116,9 +116,9 @@ binary_sensor:
               # toggle relay in case either wifi or api are not connected
 
           - switch.turn_on: shelly_relay
-          - delay: 1s   
+          - delay: 0.25s   
           - switch.turn_off: shelly_relay
-          - delay: 1s   
+          - delay: 0.25s   
           - lambda: |-
               id(timer_delay) = 8*3600;
           - script.execute: timer
