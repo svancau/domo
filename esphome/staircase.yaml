@@ -69,6 +69,20 @@ script:
       - delay: !lambda "return id(timer_delay) * 1000;"   
       - switch.turn_off: shelly_relay
 
+  - id: notify_on
+    then:
+      - homeassistant.event:
+          event: esphome.lamp_on
+          data:
+            title: ${device_name} lamp on
+
+  - id: notify_off
+    then:
+      - homeassistant.event:
+          event: esphome.lamp_off
+          data:
+            title: ${device_name} lamp off
+
 binary_sensor:
   - platform: gpio
     pin:
@@ -83,6 +97,7 @@ binary_sensor:
           - ON for at most 1s
           - OFF for at least 0.1s
         then:
+          - script.execute: notify_on
           - if:
               condition:
                 and:
@@ -98,10 +113,13 @@ binary_sensor:
           - lambda: |-
               id(timer_delay) = 30;
           - script.execute: timer
+          - script.execute: notify_off
+
         # long click
       - timing:
           - ON for at least 1.5s
         then:
+          - script.execute: notify_on
           - if:
               condition:
                 and:
@@ -122,11 +140,14 @@ binary_sensor:
           - lambda: |-
               id(timer_delay) = 8*3600;
           - script.execute: timer
+          - script.execute: notify_on
+
         # single click
       - timing:
           - ON for at most 1s
           - OFF for at least 0.1s
         then:
+          - script.execute: notify_on
           - if:
               condition:
                 and:
@@ -142,5 +163,7 @@ binary_sensor:
           - lambda: |-
               id(timer_delay) = 90;
           - script.execute: timer
+          - script.execute: notify_off
+
     internal: true
     id: button
