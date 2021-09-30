@@ -1,0 +1,58 @@
+substitutions:
+  device_name: shelly-hall
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+<<: !include .base.yaml
+
+api:
+  password: !secret api_password
+
+# Text sensors with general information.
+text_sensor:
+  # Expose ESPHome version as sensor.
+  - platform: version
+    name: ${device_name} ESPHome Version
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} IP
+    ssid:
+      name: ${device_name} SSID
+    bssid:
+      name: ${device_name} BSSID
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${device_name} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} WiFi Signal
+    update_interval: 60s
+
+# Example configuration entry
+light:
+  - platform: binary
+    name: "Eclairage Hall"
+    output: light_output
+
+output:
+  - id: light_output
+    platform: gpio
+    pin: GPIO4
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+    name: ${device_name} button
+    on_press:
+      - output.turn_on: light_output
+    on_release:
+      - output.turn_off: light_output
