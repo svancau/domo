@@ -52,6 +52,8 @@ binary_sensor:
     pin:
       number: GPIO5
     name: ${device_name} button
+    filters:
+      - delayed_on_off: 20 ms
     on_press:
       - output.turn_on: light_output
     on_release:
