@@ -10,6 +10,14 @@ esphome:
 
 api:
   password: !secret api_password
+  services:
+    - service: hall_lamp_timer
+      variables:
+        duration: int
+      then:
+        - lambda: |-
+            id(timer_delay) = duration;
+        - script.execute: timer
 
 # Text sensors with general information.
 text_sensor:
@@ -41,6 +49,23 @@ light:
   - platform: binary
     name: "Eclairage Hall"
     output: light_output
+
+globals:
+  # Timer delay in seconds
+  - id: timer_delay
+    type: int
+    restore_value: no
+    initial_value: '120'
+
+script:
+  # Timer script, turns relay on, then off. Duration must be stored in timer_delay
+  # before calling this
+  - id: timer 
+    mode: restart
+    then:
+      - output.turn_on: light_output
+      - delay: !lambda "return id(timer_delay) * 1000;"
+      - output.turn_off: light_output
 
 output:
   - id: light_output

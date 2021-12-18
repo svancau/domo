@@ -6,6 +6,11 @@ substitutions:
 
 esp32_ble_tracker:
 
+# Ikea Vindriktning PM2.5 sensor
+uart:
+  rx_pin: 12
+  baud_rate: 9600
+
 sensor:
   - platform: xiaomi_cgg1
     mac_address: "58:2D:34:11:39:D1"
@@ -27,6 +32,14 @@ sensor:
   - platform: ble_rssi
     mac_address: 58:2D:34:11:39:D1
     name: "SAM RSSI"
+
+  - platform: pm1006
+    pm_2_5:
+      name: "Ikea Vindriktning PM25"
+      filters:
+        - sliding_window_moving_average:
+            window_size: 10
+            send_every: 10
 
 text_sensor:
   # Expose ESPHome version as sensor.
