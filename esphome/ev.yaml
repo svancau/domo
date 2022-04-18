@@ -1,0 +1,43 @@
+substitutions:
+  device_name: shelly-ev-charge
+
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+
+<<: !include .base.yaml
+
+api:
+  password: !secret api_password
+
+# Text sensors with general information.
+text_sensor:
+  # Expose ESPHome version as sensor.
+  - platform: version
+    name: ${device_name} ESPHome Version
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} IP
+    ssid:
+      name: ${device_name} SSID
+    bssid:
+      name: ${device_name} BSSID
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${device_name} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} WiFi Signal
+    update_interval: 60s
+
+switch:
+  - platform: gpio
+    pin: 4
+    name: "EV Charge"
+
