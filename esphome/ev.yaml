@@ -8,9 +8,6 @@ esphome:
 
 <<: !include .base.yaml
 
-api:
-  password: !secret api_password
-
 # Text sensors with general information.
 text_sensor:
   # Expose ESPHome version as sensor.

@@ -9,7 +9,8 @@ esphome:
 <<: !include .base.yaml
 
 api:
-  password: !secret api_password
+  encryption:
+    key: !secret api_key
   services:
     - service: hall_lamp_timer
       variables:

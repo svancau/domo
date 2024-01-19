@@ -3,10 +3,12 @@
 # Enable logging
 logger:
   level: ERROR
+    #level: VERBOSE
 
 # Enable Home Assistant API
 api:
-  password: !secret api_password
+  encryption:
+    key: !secret api_key
 
 ota:
   password: !secret ota_password
